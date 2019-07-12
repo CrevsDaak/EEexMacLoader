@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader_dev/src/EEex_Runtime.c, 2019-07-12 Friday 19:41:28 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Runtime.c, 2019-07-12 Friday 20:05:03 nico>
  *
  */
 
@@ -43,17 +43,17 @@ typedef int (*lua_CFunction)(void*);
 
 struct __eeex_lua_f_list
 {
-    int (*pushcclosure)(lua_State*, lua_CFunction, int);
-    TValue* (*getint)(struct Table*, int);
-    void* (*newlstr)(lua_State*, const char*, size_t);
-    void (*settable)(lua_State*, const TValue*, TValue*, TValue*);
-    void (*setglobal)(lua_State*, const char*);
-    int (*gettop)(lua_State*);
-    int (*toboolean)(lua_State*, int);
-    int (*type)(lua_State*, int);
-    char* (*tostring)(lua_State*, int);
-    float (*tonumber)(lua_State*, int);
-    char* (*typename)(lua_State*, int);
+    int (*pushcclosure)(void*, lua_CFunction, int);
+    void* (*getint)(void*, int);
+    void* (*newlstr)(void*, const char*, size_t);
+    void (*settable)(void*, const void*, void*, void*);
+    void (*setglobal)(void*, const char*);
+    int (*gettop)(void*);
+    int (*toboolean)(void*, int);
+    int (*type)(void*, int);
+    char* (*tostring)(void*, int);
+    float (*tonumber)(void*, int);
+    char* (*typename)(void*, int);
 };
 
 struct __eeex_lua_f_list EEex_lua;
@@ -64,7 +64,7 @@ int EEex_lua_init(void* n)
     return 0;
 }
 
-static void stackDump (lua_State *L)
+static void stackDump (void *L)
 {
     int i;
     int top = EEex_lua.gettop(L);
@@ -129,4 +129,3 @@ int EEex_init(AudioUnit au)
 }
 
 DYLD_INTERPOSE(EEex_init, AudioUnitInitialize)
-
