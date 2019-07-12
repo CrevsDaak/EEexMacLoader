@@ -1,0 +1,61 @@
+// installer lib for the Mac version of the EEex loader
+// author: CrevsDaak
+
+/*
+ * The variables:
+ *   EEexMacLoader_based
+ *   c7_game_exe_path
+ *
+ * Can be redirected to anything else you'd like,
+ * in case you feel like breaking things or
+ * re-distributing EEex a la TobEx, which is fine
+ * and I don't mind it as long as you don't break
+ * things.
+ *
+ * The first variable describes where this super short
+ * and unnecessary .tph will look for its 'copy' folder.
+ *
+ * The second one points to where that should be put in,
+ * ideally, I mean, if you want things to work, it should
+ * be where the main executable for the game is. Currently
+ * it's pointed at the BG:EE one but that can be changed
+ * as I've just said although a more ideal method should
+ * be put in place instead (consider this more of a TODO
+ * than information about this file in which the information
+ * outsizes the largely self-explanatory code by a large margin
+ * because I felt like writing a lot this morning, but not code).
+ *
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader_dev/EEex_mac.tph, 2019-07-11 Thursday 16:56:36 nico>
+ *
+ * Also: could potentially write something to detect what path
+ * our data to be installed is in. Shouldn't be too hard.
+ *
+ * Add:
+ *   ini options (for what even?)
+ *   custom EEex.sh name support
+ *   version checking? yes please? hm?
+ *   this thing and the binaries to the main EEex repo
+ *   OS checking
+ *   check whether EEex is already installed
+ *   more bugs!
+ *   and jokes
+ *   uuuuuuuuuuuuuh
+ *   automatically beautify EEex.sh?
+ *   document things? nah
+ *
+ */
+
+ACTION_IF !EEexMacLoader_based BEGIN
+  OUTER_SET EEexMacLoader_based "EEex/mac"
+END
+
+ACTION_IF !c7_game_exe_path BEGIN
+  OUTER_SET c7_game_exe_path "Baldur's Gate - Enhanced Edition.app/Contents/MacOS"
+END
+  
+COPY "%EEexMacLoader_based%/copy" "%c7_game_exe_path%/"
+
+/* assume our file's name remains the same */
+AT_NOW ~chmod +x %c7_game_exe_path%/EEex.sh~
+
+PRINT ~EEex installed. Please launch the game via EEex.sh if you wish to make use of EEex. Otherwise, you can continue playing the game as usual by launching it however you used to.~
