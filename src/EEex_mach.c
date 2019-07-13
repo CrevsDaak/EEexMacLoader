@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_mach.c, 2019-07-13 Saturday 16:04:08 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_mach.c, 2019-07-13 Saturday 16:15:50 nico>
  *
  */
 
@@ -110,27 +110,22 @@ extern inline int EEex_write_qword(void* wraddr, int64_t qword)
     return EEex_write(wraddr, &qword, 8);
 }
 
-extern inline int8_t EEex_read_byte(void* raddr, int8_t byte)
+extern inline int EEex_read_byte(void* raddr, int8_t byte)
 {
     return EEex_read(raddr, &byte, 1);
 }
 
-extern inline int16_t EEex_read_word(void* raddr, int16_t word)
+extern inline int EEex_read_word(void* raddr, int16_t word)
 {
     return EEex_read(raddr, &word, 2);
 }
 
-extern inline int32_t EEex_read_dword(void* raddr, int32_t dword)
+extern inline int EEex_read_dword(void* raddr, int32_t dword)
 {
     return EEex_read(raddr, &dword, 4);
 }
 
-extern inline int64_t EEex_read_qword(void* raddr, int64_t qword)
-{
-    return EEex_read(raddr, &qword, 8);
-}
-
-extern inline int EEex_read_qword2(void* raddr, int64_t qword)
+extern inline int EEex_read_qword(void* raddr, int64_t qword)
 {
     return EEex_read(raddr, &qword, 8);
 }
