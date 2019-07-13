@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader_dev/src/EEex_mach.c, 2019-07-12 Friday 16:20:21 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_mach.c, 2019-07-13 Saturday 16:04:08 nico>
  *
  */
 
@@ -37,24 +37,16 @@
 #include <mach/mach_error.h>
 #include "EEex_mach.h"
 #include "EEex_Logger.h"
-/* todo:
- * clean up the _DEBUGs off this file... ideally... at some point...
- * shup up -Wincompatible-pointer-types going ham on vm_region calls
- * remove the memmove so that I can compile with -O3 and not -O0
- */
-int EEex_protect(void* paddr, vm_prot_t prot, bool max)
+
+int EEex_protect(void* addr, vm_prot_t prot, bool max)
 {
     mach_vm_size_t vmsize;
     vm_region_basic_info_data_64_t info;
     mach_msg_type_number_t info_count = VM_REGION_BASIC_INFO_COUNT_64;
     memory_object_name_t object;
-    mach_vm_address_t* addr = NULL;
-    /* this is so that paddr isn't modified by vm_region */
-    /* also check whether it's actually necessary or not */
-    memmove(addr, paddr, sizeof(mach_vm_address_t));
-    
+    EEex_Log(3,"addr\t%p\n",addr);
     mach_error_t e = mach_vm_region(mach_task_self(), (mach_vm_address_t*)&addr, &vmsize, VM_REGION_BASIC_INFO_64, (vm_region_info_64_t)&info, &info_count, &object);
-
+    EEex_Log(3,"vm_region:\n addr\t%p\n prot\t%d\n mprot\t%p\n vmsize\t%u\n offset\t%p\n",addr, info.protection, info.max_protection, vmsize, info.offset);
     if (e != KERN_SUCCESS)
     {
 	EEex_Log(0, "error: vm_region failed: %s\n", mach_error_string(e));
@@ -74,12 +66,24 @@ int EEex_protect(void* paddr, vm_prot_t prot, bool max)
 	return 0;
 }
 /* maybe add a soft failure system and call vm_protect if necessary? */
-static int EEex_write(void* wraddr, void* data, uint64_t dsz)
+static int EEex_write(void* wraddr, void* data, uint32_t dsz)
 {
     kern_return_t e = mach_vm_write(mach_task_self(), (mach_vm_address_t)wraddr, (pointer_t)data, (mach_msg_type_number_t)dsz);
     if (e != KERN_SUCCESS)
     {
 	EEex_Log(0, "error: vm_write(%u) failed: %s\n", dsz, mach_error_string(e));
+	return 1;
+    }
+    else
+	return 0;
+}
+
+static int EEex_read(void* raddr, void* dst, uint32_t rsz)
+{
+    kern_return_t e = mach_vm_read(mach_task_self(), (mach_vm_address_t)raddr, (mach_vm_size_t)rsz, (vm_offset_t*)dst, &rsz);
+    if (e != KERN_SUCCESS)
+    {
+	EEex_Log(0, "error: vm_read(%u) failed: %s\n", rsz, mach_error_string(e));
 	return 1;
     }
     else
@@ -104,4 +108,29 @@ extern inline int EEex_write_dword(void* wraddr, int32_t dword)
 extern inline int EEex_write_qword(void* wraddr, int64_t qword)
 {
     return EEex_write(wraddr, &qword, 8);
+}
+
+extern inline int8_t EEex_read_byte(void* raddr, int8_t byte)
+{
+    return EEex_read(raddr, &byte, 1);
+}
+
+extern inline int16_t EEex_read_word(void* raddr, int16_t word)
+{
+    return EEex_read(raddr, &word, 2);
+}
+
+extern inline int32_t EEex_read_dword(void* raddr, int32_t dword)
+{
+    return EEex_read(raddr, &dword, 4);
+}
+
+extern inline int64_t EEex_read_qword(void* raddr, int64_t qword)
+{
+    return EEex_read(raddr, &qword, 8);
+}
+
+extern inline int EEex_read_qword2(void* raddr, int64_t qword)
+{
+    return EEex_read(raddr, &qword, 8);
 }
