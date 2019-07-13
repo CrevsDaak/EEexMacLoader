@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_mach.c, 2019-07-13 Saturday 16:15:50 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Mach.c, 2019-07-13 Saturday 19:39:58 nico>
  *
  */
 
@@ -44,9 +44,8 @@ int EEex_protect(void* addr, vm_prot_t prot, bool max)
     vm_region_basic_info_data_64_t info;
     mach_msg_type_number_t info_count = VM_REGION_BASIC_INFO_COUNT_64;
     memory_object_name_t object;
-    EEex_Log(3,"addr\t%p\n",addr);
+
     mach_error_t e = mach_vm_region(mach_task_self(), (mach_vm_address_t*)&addr, &vmsize, VM_REGION_BASIC_INFO_64, (vm_region_info_64_t)&info, &info_count, &object);
-    EEex_Log(3,"vm_region:\n addr\t%p\n prot\t%d\n mprot\t%p\n vmsize\t%u\n offset\t%p\n",addr, info.protection, info.max_protection, vmsize, info.offset);
     if (e != KERN_SUCCESS)
     {
 	EEex_Log(0, "error: vm_region failed: %s\n", mach_error_string(e));
@@ -66,7 +65,7 @@ int EEex_protect(void* addr, vm_prot_t prot, bool max)
 	return 0;
 }
 /* maybe add a soft failure system and call vm_protect if necessary? */
-static int EEex_write(void* wraddr, void* data, uint32_t dsz)
+int EEex_write(void* wraddr, void* data, uint32_t dsz)
 {
     kern_return_t e = mach_vm_write(mach_task_self(), (mach_vm_address_t)wraddr, (pointer_t)data, (mach_msg_type_number_t)dsz);
     if (e != KERN_SUCCESS)
@@ -78,7 +77,7 @@ static int EEex_write(void* wraddr, void* data, uint32_t dsz)
 	return 0;
 }
 
-static int EEex_read(void* raddr, void* dst, uint32_t rsz)
+int EEex_read(void* raddr, void* dst, uint32_t rsz)
 {
     kern_return_t e = mach_vm_read(mach_task_self(), (mach_vm_address_t)raddr, (mach_vm_size_t)rsz, (vm_offset_t*)dst, &rsz);
     if (e != KERN_SUCCESS)
@@ -88,44 +87,4 @@ static int EEex_read(void* raddr, void* dst, uint32_t rsz)
     }
     else
 	return 0;
-}
-
-extern inline int EEex_write_byte(void* wraddr, int8_t byte)
-{
-    return EEex_write(wraddr, &byte, 1);
-}
-
-extern inline int EEex_write_word(void* wraddr, int16_t word)
-{
-    return EEex_write(wraddr, &word, 2);
-}
-
-extern inline int EEex_write_dword(void* wraddr, int32_t dword)
-{
-    return EEex_write(wraddr, &dword, 4);
-}
-
-extern inline int EEex_write_qword(void* wraddr, int64_t qword)
-{
-    return EEex_write(wraddr, &qword, 8);
-}
-
-extern inline int EEex_read_byte(void* raddr, int8_t byte)
-{
-    return EEex_read(raddr, &byte, 1);
-}
-
-extern inline int EEex_read_word(void* raddr, int16_t word)
-{
-    return EEex_read(raddr, &word, 2);
-}
-
-extern inline int EEex_read_dword(void* raddr, int32_t dword)
-{
-    return EEex_read(raddr, &dword, 4);
-}
-
-extern inline int EEex_read_qword(void* raddr, int64_t qword)
-{
-    return EEex_read(raddr, &qword, 8);
 }

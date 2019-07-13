@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Logger.m, 2019-07-04 Thursday 20:15:00 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Logger.m, 2019-07-13 Saturday 15:37:37 nico>
  *
  */
 
