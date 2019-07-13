@@ -1,5 +1,5 @@
 /*
- * EEex_Runtime.c -- Mac OSX version of the EEex loader.
+ * EEex_Init.c -- Mac OSX version of the EEex loader.
  *
  * Copyright (c) 2019 Nicolás Clotta <nicolas.clotta@gmail.com>
  * All rights reserved.
@@ -25,106 +25,62 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Runtime.c, 2019-07-12 Friday 20:05:03 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-13 Saturday 19:19:34 nico>
  *
  */
 
 #include <dlfcn.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
 #include <stdint.h>
-#include <string.h>
+#include <sysexits.h>
 #include <mach/mach_vm.h>
 #include <AudioUnit/AudioUnit.h>
 #include "EEex_mach.h"
+#include "EEex_Lua.h"
+#include "EEex_Init.h"
 #include "EEex_Logger.h"
 
-typedef int (*lua_CFunction)(void*);
-
-struct __eeex_lua_f_list
+__attribute__((constructor)) static void EEex_ctor(void)
 {
-    int (*pushcclosure)(void*, lua_CFunction, int);
-    void* (*getint)(void*, int);
-    void* (*newlstr)(void*, const char*, size_t);
-    void (*settable)(void*, const void*, void*, void*);
-    void (*setglobal)(void*, const char*);
-    int (*gettop)(void*);
-    int (*toboolean)(void*, int);
-    int (*type)(void*, int);
-    char* (*tostring)(void*, int);
-    float (*tonumber)(void*, int);
-    char* (*typename)(void*, int);
-};
-
-struct __eeex_lua_f_list EEex_lua;
-
-int EEex_lua_init(void* n)
-{
-    (void)n;
-    return 0;
-}
-
-static void stackDump (void *L)
-{
-    int i;
-    int top = EEex_lua.gettop(L);
-    for (i = 1; i <= top; i++)
+    if (access("../../../override/M__EEex.lua", F_OK)) /* assume we're in MacOS/ sitting next to the game's binary */
     {
-        int t = EEex_lua.type(L, i);
-        switch (t)
-	{
-	case 4:
-	    EEex_Log(0,"`%s'", EEex_lua.tostring(L, i));
-	    break;
-	    
-	case 1:
-             EEex_Log(0,EEex_lua.toboolean(L, i) ? "true" : "false");
-             break;
-	     
-	 case 3:
-             EEex_Log(0,"%g", EEex_lua.tonumber(L, i));
-             break;
-	     
-	default:  /* other values */
-            EEex_Log(0,"%s", EEex_lua.typename(L, t));
-            break;
-	    
-        }
-        EEex_Log(0,"  ");  /* put a separator */
+	EEex_Log(0, "error: M__EEex.lua does not exist: %s\n", strerror(errno));
+	exit(EX_DATAERR);
     }
-    EEex_Log(0,"\n");  /* end the listing */
 }
 
 int EEex_init(AudioUnit au)
 {
-    void* h = dlopen(NULL, RTLD_NOW);
-    
+    EEex_lua.handle = dlopen(NULL, RTLD_NOW);
+
     if (EEex_protect(NULL, VM_PROT_EXECUTE|VM_PROT_READ|VM_PROT_WRITE, false))
     {
 	EEex_Log(0, "error: EEex_protect call on game memory failed: exiting!\n");
-	exit(1);
+	exit(EX_OSERR);
     }
 
-    EEex_lua.pushcclosure = dlsym(h, "lua_pushcclosure");
-    EEex_lua.getint = dlsym(h, "luaH_getint");
-    EEex_lua.gettop = dlsym(h, "lua_gettop");
-    EEex_lua.type = dlsym(h, "lua_type");
-    EEex_lua.tostring = dlsym(h, "lua_tostring");
-    EEex_lua.toboolean = dlsym(h, "lua_toboolean");
-    EEex_lua.tonumber = dlsym(h, "lua_tonumber");
-    EEex_lua.newlstr = dlsym(h, "luaS_newlstr");
-    EEex_lua.typename = dlsym(h, "lua_typename");
-    EEex_lua.setglobal = dlsym(h, "lua_setglobal");
+    EEex_lua.pushcclosure = dlsym(EEex_lua.handle, "lua_pushcclosure");
+    EEex_lua.getint = dlsym(EEex_lua.handle, "luaH_getint");
+    EEex_lua.gettop = dlsym(EEex_lua.handle, "lua_gettop");
+    EEex_lua.type = dlsym(EEex_lua.handle, "lua_type");
+    EEex_lua.tostring = dlsym(EEex_lua.handle, "lua_tostring");
+    EEex_lua.toboolean = dlsym(EEex_lua.handle, "lua_toboolean");
+    EEex_lua.tonumber = dlsym(EEex_lua.handle, "lua_tonumber");
+    EEex_lua.newlstr = dlsym(EEex_lua.handle, "luaS_newlstr");
+    EEex_lua.typename = dlsym(EEex_lua.handle, "lua_typename");
+    EEex_lua.setglobal = dlsym(EEex_lua.handle, "lua_setglobal");
 
-    void** aux_L = dlsym(h, "g_lua");
-    void* L = (*aux_L);
-    EEex_Log(0, "aux_L\t%p\nL\t%p\n",aux_L,L);
+    void** aux_L = dlsym(EEex_lua.handle, "g_lua");
+    EEex_lua.State = (*aux_L);
 
-    stackDump(L);
+    EEex_lua.pushcclosure(EEex_lua.State, (lua_CFunction)&EEex_lua_init, 0);
+    EEex_lua.setglobal(EEex_lua.State, "EEex_Init");
 
-    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_init, 0);
-    EEex_lua.setglobal(L, "EEex_Init");
-    
+    EEex_lua.pushcclosure(EEex_lua.State, (lua_CFunction)&EEex_lua_dump_stack, 0);
+    EEex_lua.setglobal(EEex_lua.State, "EEex_DumpLuaStack");
+
     return AudioUnitInitialize(au);
 }
 

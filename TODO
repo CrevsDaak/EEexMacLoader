@@ -1,11 +1,5 @@
-* add logging
-* rewrite makefile
-* add REPL console to the loader itself, use pthread.h
+* improve logging
+* add REPL console to the loader itself, maybe run on a 2nd thread
 * actually test things
 * actually get things to work
 * add configuration options (?)
-
-brainstorming:
-add a function that uses va_list to let the user call basically any function available to dlsym
-add loaded functions to a tree, search that before loading them again unless that takes longer
-or just use a more specific (for each function) way of storing data that'd work like an address.
