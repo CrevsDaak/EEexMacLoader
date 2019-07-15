@@ -7,13 +7,13 @@ EExMacLoader: EEex_Logger.o EEex_Init.o EEex_Mach.o EEex_Lua.o
 	clang -dynamiclib EEex_Init.o EEex_Mach.o EEex_Lua.o EEex_Logger.o -framework Foundation -framework AudioUnit -o EEexLoader.dylib
 
 EEex_Init.o:
-	clang -O3 -c -o EEex_Init.o -Wall -Wextra EEex_Init.c
+	clang -O3 -c -o EEex_Init.o -std=c99 -Wall -Wextra EEex_Init.c
 
 EEex_Mach.o:
-	clang -O3 -c -o EEex_Mach.o -Wall -Wextra EEex_Mach.c
+	clang -O3 -c -o EEex_Mach.o -std=c99 -Wall -Wextra EEex_Mach.c
 
 EEex_Lua.o:
-	clang -O3 -c -o EEex_Lua.o -Wall -Wextra EEex_Lua.c
+	clang -O3 -c -o EEex_Lua.o -std=c99 -Wall -Wextra EEex_Lua.c
 
 EEex_Logger.o:
 	clang -O3 -c -o EEex_Logger.o -w EEex_Logger.m
