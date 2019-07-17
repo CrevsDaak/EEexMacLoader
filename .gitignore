@@ -1,3 +1,4 @@
+*.el
 *.o
 src/EEexLoader.dylib
 src/move_lib.sh
