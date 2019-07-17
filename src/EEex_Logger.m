@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Logger.m, 2019-07-13 Saturday 15:37:37 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Logger.m, 2019-07-16 Tuesday 22:43:38 nico>
  *
  */
 
@@ -69,7 +69,7 @@ void EEex_interpose_Log(NSString* restrict a, ...)
     va_start(w, [a UTF8String]);
     /* this gives out a LOT of warnings, but I don't really know ObjC so not fixing */
     NSString *b = [[NSString alloc] initWithFormat:a arguments:w];
-    EEex_Logv(6, [[NSString stringWithFormat: @"%@\n", b] UTF8String], w); /* changed game loglevel req to 6 for debugging, should be 2 */
+    EEex_Logv(6, [[NSString stringWithFormat: @"%@\n", b] UTF8String], w);
     va_end(w);
 }
 

@@ -5,8 +5,6 @@ typedef int (*lua_CFunction)(void*);
 
 struct __eeex_lua_f_list
 {
-    void* State;
-    void* handle;
     int (*pushcclosure)(void*, lua_CFunction, int);
     void* (*getint)(void*, int);
     void* (*newlstr)(void*, const char*, size_t);
@@ -18,8 +16,16 @@ struct __eeex_lua_f_list
     char* (*tostring)(void*, int);
     float (*tonumber)(void*, int);
     char* (*typename)(void*, int);
+    ptrdiff_t (*tointegerx)(void*, int, int*);
+    int (*error)(void*, const char*, ...);
+    void (*pushnumber)(void*, double);
+    int (*loadstring)(void*, const char*);
 };
 
 struct __eeex_lua_f_list EEex_lua;
+
+void EEex_patch_lua_init(void);
+
+bool EEex_initialised;
 
 #endif /* !__EEEX_INIT_H_ */

@@ -25,22 +25,56 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-13 Saturday 19:19:34 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-16 Tuesday 23:09:03 nico>
  *
  */
 
-#include <dlfcn.h>
-#include <unistd.h>
 #include <stdbool.h>
-#include <errno.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <signal.h>
+#include <unistd.h>
+#include <dlfcn.h>
 #include <sysexits.h>
+#include <sys/_types/_ptrdiff_t.h>
 #include <mach/mach_vm.h>
-#include <AudioUnit/AudioUnit.h>
-#include "EEex_mach.h"
+
+#include "EEex_Mach.h"
 #include "EEex_Lua.h"
 #include "EEex_Init.h"
 #include "EEex_Logger.h"
+
+/* maybe add error checking for dl* functions? */
+
+int EEex_init(void* L, const char* s)
+{
+    EEex_Log(0, "EEex_init called\n");
+    void* h = dlopen(NULL, RTLD_NOW);
+
+    EEex_lua.pushcclosure = dlsym(h, "lua_pushcclosure");
+    EEex_lua.getint = dlsym(h, "luaH_getint");
+    EEex_lua.gettop = dlsym(h, "lua_gettop");
+    EEex_lua.type = dlsym(h, "lua_type");
+    EEex_lua.tostring = dlsym(h, "lua_tostring");
+    EEex_lua.toboolean = dlsym(h, "lua_toboolean");
+    EEex_lua.tonumber = dlsym(h, "lua_tonumber");
+    EEex_lua.newlstr = dlsym(h, "luaS_newlstr");
+    EEex_lua.typename = dlsym(h, "lua_typename");
+    EEex_lua.setglobal = dlsym(h, "lua_setglobal");
+    EEex_lua.tointegerx = dlsym(h, "lua_tointegerx");
+    EEex_lua.error = dlsym(h, "luaL_error");
+    EEex_lua.pushnumber = dlsym(h, "lua_pushnumber");
+    EEex_lua.loadstring = dlsym(h, "luaL_loadstring");
+
+    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_init, 0);
+    EEex_lua.setglobal(L, "EEex_Init");
+
+    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_dump_stack, 0);
+    EEex_lua.setglobal(L, "EEex_DumpLuaStack");
+
+    return EEex_lua.loadstring(L, s);
+}
 
 __attribute__((constructor)) static void EEex_ctor(void)
 {
@@ -49,11 +83,6 @@ __attribute__((constructor)) static void EEex_ctor(void)
 	EEex_Log(0, "error: M__EEex.lua does not exist: %s\n", strerror(errno));
 	exit(EX_DATAERR);
     }
-}
-
-int EEex_init(AudioUnit au)
-{
-    EEex_lua.handle = dlopen(NULL, RTLD_NOW);
 
     if (EEex_protect(NULL, VM_PROT_EXECUTE|VM_PROT_READ|VM_PROT_WRITE, false))
     {
@@ -61,27 +90,15 @@ int EEex_init(AudioUnit au)
 	exit(EX_OSERR);
     }
 
-    EEex_lua.pushcclosure = dlsym(EEex_lua.handle, "lua_pushcclosure");
-    EEex_lua.getint = dlsym(EEex_lua.handle, "luaH_getint");
-    EEex_lua.gettop = dlsym(EEex_lua.handle, "lua_gettop");
-    EEex_lua.type = dlsym(EEex_lua.handle, "lua_type");
-    EEex_lua.tostring = dlsym(EEex_lua.handle, "lua_tostring");
-    EEex_lua.toboolean = dlsym(EEex_lua.handle, "lua_toboolean");
-    EEex_lua.tonumber = dlsym(EEex_lua.handle, "lua_tonumber");
-    EEex_lua.newlstr = dlsym(EEex_lua.handle, "luaS_newlstr");
-    EEex_lua.typename = dlsym(EEex_lua.handle, "lua_typename");
-    EEex_lua.setglobal = dlsym(EEex_lua.handle, "lua_setglobal");
+    void* btLua = dlsym(dlopen(NULL, RTLD_NOW), "_Z12bootstrapLuav");
 
-    void** aux_L = dlsym(EEex_lua.handle, "g_lua");
-    EEex_lua.State = (*aux_L);
+    int32_t off_bt = (int64_t)btLua + 322 - (int64_t)&EEex_init;
+    int64_t inst = 0xE8 | off_bt << 8;
+    EEex_Log(0, "off_bt\t%p\nbtLua\t%p\nwroff\t%p\nEEex_init\t%p\n", off_bt, btLua, (btLua + 318), &EEex_init);
 
-    EEex_lua.pushcclosure(EEex_lua.State, (lua_CFunction)&EEex_lua_init, 0);
-    EEex_lua.setglobal(EEex_lua.State, "EEex_Init");
-
-    EEex_lua.pushcclosure(EEex_lua.State, (lua_CFunction)&EEex_lua_dump_stack, 0);
-    EEex_lua.setglobal(EEex_lua.State, "EEex_DumpLuaStack");
-
-    return AudioUnitInitialize(au);
+    if (EEex_write((void*)(btLua + 318), &inst, 5))
+    {
+	EEex_Log(0, "error: EEex_write failed to patch into bootstrapLua: exiting!\n");
+	//exit(EX_OSERR); /* maybe use EX_NOPERM instead?? */
+    }
 }
-
-DYLD_INTERPOSE(EEex_init, AudioUnitInitialize)

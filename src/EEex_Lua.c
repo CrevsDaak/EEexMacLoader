@@ -25,32 +25,35 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-13 Saturday 19:22:53 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-16 Tuesday 15:08:57 nico>
  *
  */
 
-#include <stdint.h>
-#include <mach/mach_vm.h>
 #include <stdbool.h>
-#include "EEex_mach.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/_types/_ptrdiff_t.h>
+#include <mach/mach_vm.h>
+
+#include "EEex_Mach.h"
 #include "EEex_Logger.h"
 #include "EEex_Init.h"
 
-int EEex_lua_test(void* L)
-{
-    uint64_t addr = EEex_lua.tonumber(L, -1);
-    (void)addr;
-    return 0;
-}
-
 int EEex_lua_init(void* L)
 {
-    (void)L;
     EEex_Log(0, "EEex_Init called!\n");
-    return 0;
+    uint64_t r = (uint64_t)malloc(4096);
+    if (!r)
+	return EEex_lua.error(L, "error: malloc failed: %s\n", strerror(errno));
+    else
+	EEex_lua.pushnumber(L, (double)r);
+
+    return 1;
 }
 
-void EEex_lua_dump_stack(void *L)
+int EEex_lua_dump_stack(void *L)
 {
     int top = EEex_lua.gettop(L);
     for (int i = 1; i <= top; i++)
@@ -75,4 +78,27 @@ void EEex_lua_dump_stack(void *L)
             break;
         }
     }
+    return 0;
+}
+
+int EEex_lua_read_dword(void* L)
+{
+    ptrdiff_t raddr = EEex_lua.tointegerx(L, -1, NULL);
+    int32_t dword;
+    if (EEex_read((void*)raddr, &dword, 4))
+	return EEex_lua.error(L, "error: failed to read dword at %p\n", raddr);
+    else
+	EEex_lua.pushnumber(L, (double)dword);
+
+    return 1;
+}
+
+int EEex_lua_write_byte(void* L)
+{
+    ptrdiff_t wraddr = EEex_lua.tointegerx(L, -2, NULL);
+    int8_t byte = EEex_lua.tointegerx(L, -1, NULL);
+    if (EEex_write((void*)wraddr, &byte, 1))
+	return EEex_lua.error(L, "error: failed to write %d on byte at %p\n", byte, wraddr);
+
+    return 0;
 }
