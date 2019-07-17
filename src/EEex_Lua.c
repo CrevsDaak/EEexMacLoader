@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-16 Tuesday 15:08:57 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-17 Wednesday 12:25:35 nico>
  *
  */
 
@@ -43,7 +43,7 @@
 
 int EEex_lua_init(void* L)
 {
-    EEex_Log(0, "EEex_Init called!\n");
+    EEex_Log(0, "EEex_Init called! (from Lua)\n");
     uint64_t r = (uint64_t)malloc(4096);
     if (!r)
 	return EEex_lua.error(L, "error: malloc failed: %s\n", strerror(errno));

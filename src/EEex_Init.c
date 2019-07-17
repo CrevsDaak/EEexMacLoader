@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-16 Tuesday 23:09:03 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-17 Wednesday 12:26:57 nico>
  *
  */
 
@@ -49,7 +49,6 @@
 
 int EEex_init(void* L, const char* s)
 {
-    EEex_Log(0, "EEex_init called\n");
     void* h = dlopen(NULL, RTLD_NOW);
 
     EEex_lua.pushcclosure = dlsym(h, "lua_pushcclosure");
@@ -91,14 +90,13 @@ __attribute__((constructor)) static void EEex_ctor(void)
     }
 
     void* btLua = dlsym(dlopen(NULL, RTLD_NOW), "_Z12bootstrapLuav");
-
-    int32_t off_bt = (int64_t)btLua + 322 - (int64_t)&EEex_init;
-    int64_t inst = 0xE8 | off_bt << 8;
-    EEex_Log(0, "off_bt\t%p\nbtLua\t%p\nwroff\t%p\nEEex_init\t%p\n", off_bt, btLua, (btLua + 318), &EEex_init);
-
-    if (EEex_write((void*)(btLua + 318), &inst, 5))
+    if (btLua) /* this check is so that I test this on lldb */
     {
-	EEex_Log(0, "error: EEex_write failed to patch into bootstrapLua: exiting!\n");
-	//exit(EX_OSERR); /* maybe use EX_NOPERM instead?? */
+	int32_t off_bt = (int32_t)&EEex_init - ((int32_t)btLua + 323);
+	if (EEex_write((void*)(btLua + 319), &off_bt, 4))
+	{
+	    EEex_Log(0, "error: EEex_write failed to patch into bootstrapLua: exiting!\n");
+	    exit(EX_OSERR); /* maybe use EX_NOPERM instead?? */
+	}
     }
 }

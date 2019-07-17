@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Mach.c, 2019-07-16 Tuesday 15:09:36 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Mach.c, 2019-07-17 Wednesday 12:00:04 nico>
  *
  */
 
@@ -47,7 +47,7 @@ int EEex_protect(void* addr, vm_prot_t prot, bool max)
     memory_object_name_t object;
 
     mach_error_t e = mach_vm_region(mach_task_self(), (mach_vm_address_t*)&addr, &vmsize, VM_REGION_BASIC_INFO_64, (vm_region_info_64_t)&info, &info_count, &object);
-    EEex_Log(3,"vm_region:\n addr\t%p\n prot\t%d\n mprot\t%p\n vmsize\t%u\n offset\t%p\n",addr, info.protection, info.max_protection, vmsize, info.offset);
+//    EEex_Log(3,"vm_region:\n addr\t%p\n prot\t%d\n mprot\t%p\n vmsize\t%u\n offset\t%p\n",addr, info.protection, info.max_protection, vmsize, info.offset);
     if (e != KERN_SUCCESS)
     {
 	EEex_Log(0, "error: vm_region failed: %s\n", mach_error_string(e));
