@@ -19,7 +19,7 @@ struct __eeex_lua_f_list
     int (*error)(void*, const char*, ...);
     void (*pushnumber)(void*, double);
     int (*loadstring)(void*, const char*);
-    const char* (*tostring)(void*, int, unsigned long);
+    const char* (*tostring)(void*, int, unsigned long*);
 };
 
 struct __eeex_lua_f_list EEex_lua;

@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-17 Wednesday 13:09:43 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-17 Wednesday 13:22:16 nico>
  *
  */
 
@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <dlfcn.h>
 #include <sys/_types/_ptrdiff_t.h>
 #include <mach/mach_vm.h>
 
@@ -62,7 +63,7 @@ int EEex_lua_dump_stack(void *L)
         switch (t)
 	{
 	case 4:
-	    EEex_Log(3, "[%d] `%s'\n", EEex_lua.tolstring(L, i, NULL), i);
+	    EEex_Log(3, "[%d] `%s'\n", EEex_lua.tostring(L, i, NULL), i);
 	    break;
 	    
 	case 1:
@@ -105,21 +106,23 @@ int EEex_lua_write_byte(void* L)
 
 int EEex_lua_dlsym(void* L)
 {
-    char* sym = EEex_lua.tostring(L, -1, NULL); /* hackjob, probably too slow, so fix and add error checking */
-    EEex_lua.pushnumber(L, (double)dlsym(dlopen(NULL, RTLD_NOW), sym));
+    const char* sym = EEex_lua.tostring(L, -1, NULL); /* hackjob, probably too slow, so fix and add error checking */
+    uint64_t temp = (uint64_t)dlsym(dlopen(NULL, RTLD_NOW), sym);
+    EEex_lua.pushnumber(L, (double)temp);
     return 1;
 }
 
 int EEex_lua_make_call(void* L)
 {
+    (void)L;
     return 0;
 }
 
 int EEex_lua_expose_cfunc(void* L)
 {
     ptrdiff_t faddr = EEex_lua.tointegerx(L, -2, NULL);
-    char* name = EEex_lua.tostring(L, -1, NULL);
-    EEex_lua.pushcclosure(L, faddr, 0);
+    const char* name = EEex_lua.tostring(L, -1, NULL);
+    EEex_lua.pushcclosure(L, (lua_CFunction)faddr, 0);
     EEex_lua.setglobal(L, name);
     return 0;
 }
