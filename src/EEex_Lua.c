@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-17 Wednesday 12:25:35 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-17 Wednesday 13:09:43 nico>
  *
  */
 
@@ -62,7 +62,7 @@ int EEex_lua_dump_stack(void *L)
         switch (t)
 	{
 	case 4:
-	    EEex_Log(3, "[%d] `%s'\n", EEex_lua.tostring(L, i), i);
+	    EEex_Log(3, "[%d] `%s'\n", EEex_lua.tolstring(L, i, NULL), i);
 	    break;
 	    
 	case 1:
@@ -70,7 +70,7 @@ int EEex_lua_dump_stack(void *L)
 	    break;
 	    
 	case 3:
-	    EEex_Log(3, "[%d] %g\n", EEex_lua.tonumber(L, i), i);
+	    EEex_Log(3, "[%d] %g\n", EEex_lua.tonumber(L, i, NULL), i);
 	    break;
 	    
 	default:  /* other values */
@@ -100,5 +100,26 @@ int EEex_lua_write_byte(void* L)
     if (EEex_write((void*)wraddr, &byte, 1))
 	return EEex_lua.error(L, "error: failed to write %d on byte at %p\n", byte, wraddr);
 
+    return 0;
+}
+
+int EEex_lua_dlsym(void* L)
+{
+    char* sym = EEex_lua.tostring(L, -1, NULL); /* hackjob, probably too slow, so fix and add error checking */
+    EEex_lua.pushnumber(L, (double)dlsym(dlopen(NULL, RTLD_NOW), sym));
+    return 1;
+}
+
+int EEex_lua_make_call(void* L)
+{
+    return 0;
+}
+
+int EEex_lua_expose_cfunc(void* L)
+{
+    ptrdiff_t faddr = EEex_lua.tointegerx(L, -2, NULL);
+    char* name = EEex_lua.tostring(L, -1, NULL);
+    EEex_lua.pushcclosure(L, faddr, 0);
+    EEex_lua.setglobal(L, name);
     return 0;
 }

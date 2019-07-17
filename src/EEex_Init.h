@@ -13,13 +13,13 @@ struct __eeex_lua_f_list
     int (*gettop)(void*);
     int (*toboolean)(void*, int);
     int (*type)(void*, int);
-    char* (*tostring)(void*, int);
-    float (*tonumber)(void*, int);
+    float (*tonumber)(void*, int, int*);
     char* (*typename)(void*, int);
     ptrdiff_t (*tointegerx)(void*, int, int*);
     int (*error)(void*, const char*, ...);
     void (*pushnumber)(void*, double);
     int (*loadstring)(void*, const char*);
+    const char* (*tostring)(void*, int, unsigned long);
 };
 
 struct __eeex_lua_f_list EEex_lua;

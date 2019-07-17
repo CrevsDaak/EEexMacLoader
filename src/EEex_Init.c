@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-17 Wednesday 12:26:57 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-17 Wednesday 13:09:15 nico>
  *
  */
 
@@ -55,9 +55,8 @@ int EEex_init(void* L, const char* s)
     EEex_lua.getint = dlsym(h, "luaH_getint");
     EEex_lua.gettop = dlsym(h, "lua_gettop");
     EEex_lua.type = dlsym(h, "lua_type");
-    EEex_lua.tostring = dlsym(h, "lua_tostring");
     EEex_lua.toboolean = dlsym(h, "lua_toboolean");
-    EEex_lua.tonumber = dlsym(h, "lua_tonumber");
+    EEex_lua.tonumber = dlsym(h, "lua_tonumberx");
     EEex_lua.newlstr = dlsym(h, "luaS_newlstr");
     EEex_lua.typename = dlsym(h, "lua_typename");
     EEex_lua.setglobal = dlsym(h, "lua_setglobal");
@@ -65,12 +64,25 @@ int EEex_init(void* L, const char* s)
     EEex_lua.error = dlsym(h, "luaL_error");
     EEex_lua.pushnumber = dlsym(h, "lua_pushnumber");
     EEex_lua.loadstring = dlsym(h, "luaL_loadstring");
+    EEex_lua.tostring = dlsym(h, "lua_tolstring");
 
     EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_init, 0);
     EEex_lua.setglobal(L, "EEex_Init");
 
     EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_dump_stack, 0);
     EEex_lua.setglobal(L, "EEex_DumpLuaStack");
+
+    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_read_dword, 0);
+    EEex_lua.setglobal(L, "EEex_ReadDword");
+
+    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_write_byte, 0);
+    EEex_lua.setglobal(L, "EEex_WriteByte");
+
+    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_dlsym, 0);
+    EEex_lua.setglobal(L, "EEex_Label");
+
+    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_expose_cfunc, 0);
+    EEex_lua.setglobal(L, "EEex_ExposeToLua");
 
     return EEex_lua.loadstring(L, s);
 }
