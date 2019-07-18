@@ -16,10 +16,10 @@ struct __eeex_lua_f_list
     float (*tonumber)(void*, int, int*);
     char* (*typename)(void*, int);
     ptrdiff_t (*tointegerx)(void*, int, int*);
-    int (*error)(void*, const char*, ...);
     void (*pushnumber)(void*, double);
     int (*loadstring)(void*, const char*);
     const char* (*tostring)(void*, int, unsigned long*);
+    void (*pushnil)(void*);
 };
 
 struct __eeex_lua_f_list EEex_lua;

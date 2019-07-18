@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-17 Wednesday 13:22:16 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-18 Thursday 01:44:04 nico>
  *
  */
 
@@ -44,10 +44,13 @@
 
 int EEex_lua_init(void* L)
 {
-    EEex_Log(0, "EEex_Init called! (from Lua)\n");
+    EEex_Log(3, "EEex_Init called! (from Lua)\n");
     uint64_t r = (uint64_t)malloc(4096);
     if (!r)
-	return EEex_lua.error(L, "error: malloc failed: %s\n", strerror(errno));
+    {
+	EEex_Log(0, "error: malloc failed: %s\n", strerror(errno));
+	EEex_lua.pushnil(L);
+    }
     else
 	EEex_lua.pushnumber(L, (double)r);
 
@@ -87,7 +90,10 @@ int EEex_lua_read_dword(void* L)
     ptrdiff_t raddr = EEex_lua.tointegerx(L, -1, NULL);
     int32_t dword;
     if (EEex_read((void*)raddr, &dword, 4))
-	return EEex_lua.error(L, "error: failed to read dword at %p\n", raddr);
+    {
+	EEex_Log(0, "error: failed to read dword at %p\n", raddr);
+	EEex_lua.pushnil(L);
+    }
     else
 	EEex_lua.pushnumber(L, (double)dword);
 
@@ -99,7 +105,7 @@ int EEex_lua_write_byte(void* L)
     ptrdiff_t wraddr = EEex_lua.tointegerx(L, -2, NULL);
     int8_t byte = EEex_lua.tointegerx(L, -1, NULL);
     if (EEex_write((void*)wraddr, &byte, 1))
-	return EEex_lua.error(L, "error: failed to write %d on byte at %p\n", byte, wraddr);
+	EEex_Log(0, "error: failed to write %d on byte at %p\n", byte, wraddr);
 
     return 0;
 }

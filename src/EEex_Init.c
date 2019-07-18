@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-17 Wednesday 13:09:15 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-18 Thursday 01:44:34 nico>
  *
  */
 
@@ -61,10 +61,10 @@ int EEex_init(void* L, const char* s)
     EEex_lua.typename = dlsym(h, "lua_typename");
     EEex_lua.setglobal = dlsym(h, "lua_setglobal");
     EEex_lua.tointegerx = dlsym(h, "lua_tointegerx");
-    EEex_lua.error = dlsym(h, "luaL_error");
     EEex_lua.pushnumber = dlsym(h, "lua_pushnumber");
     EEex_lua.loadstring = dlsym(h, "luaL_loadstring");
     EEex_lua.tostring = dlsym(h, "lua_tolstring");
+    EEex_lua.pushnil = dlsym(h, "lua_pushnil");
 
     EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_init, 0);
     EEex_lua.setglobal(L, "EEex_Init");
