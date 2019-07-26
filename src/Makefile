@@ -1,23 +1,20 @@
-# Not portable.
-# This is just to save myself trouble.
-# Other compilation settings untested.
-# Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/Makefile, 2019-07-15 Monday 01:46:06 nico>
+# Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/Makefile, 2019-07-26 Friday 16:50:46 nico>
 
-EExMacLoader: EEex_Logger.o EEex_Init.o EEex_Mach.o EEex_Lua.o
-	clang -dynamiclib EEex_Init.o EEex_Mach.o EEex_Lua.o EEex_Logger.o -framework Foundation -o EEexLoader.dylib
+CFLAGS += -O3 -std=c99 -Wall -Wextra
+#probably should use something else to set these
+LDFLAGS += -dynamiclib -framework Foundation
 
-EEex_Init.o:
-	clang -O3 -c -o EEex_Init.o -std=c99 -Wall -Wextra EEex_Init.c
+src := $(shell find . -name \*.[cm])
 
-EEex_Mach.o:
-	clang -O3 -c -o EEex_Mach.o -std=c99 -Wall -Wextra EEex_Mach.c
+EEexLoader.dylib: $(addsuffix .o, $(basename $(src)))
+	$(LINK.o) $^ $(OUTPUT_OPTION)
 
-EEex_Lua.o:
-	clang -O3 -c -o EEex_Lua.o -std=c99 -Wall -Wextra EEex_Lua.c
-
-EEex_Logger.o:
-	clang -O3 -c -o EEex_Logger.o -w EEex_Logger.m
+%.o: %.c
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+#already know what the compiler will say so silence objc warnings
+%.o: %.m 
+	$(COMPILE.m) -w $(OUTPUT_OPTION) $<
 
 .PHONY: clean
 clean:
-	rm -f EEexLoader.dylib EEex_Init.o EEex_Logger.o EEex_Mach.o EEex_Lua.o
+	rm -rf *.o
