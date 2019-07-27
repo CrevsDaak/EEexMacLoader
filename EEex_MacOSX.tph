@@ -1,10 +1,11 @@
 // installer lib for the Mac version of the EEex loader
 // author: CrevsDaak
+// Time-stamp: </Users/nico/BG_modding/EEexMacLoader/EEex_MacOSX.tph, 2019-07-27 Saturday 00:37:46 nico>
+// v1.0
 
 /*
- * The variables:
- *   EEexMacLoader_based
- *   c7_game_exe_path
+ * The variable
+ *   EEex_osx_loader_based
  *
  * Can be redirected to anything else you'd like,
  * in case you feel like breaking things or
@@ -12,50 +13,58 @@
  * and I don't mind it as long as you don't break
  * things.
  *
- * The first variable describes where this super short
- * and unnecessary .tph will look for its 'copy' folder.
+ * On the other hand, the variable
+ *   EEex_launch_path
  *
- * The second one points to where that should be put in,
- * ideally, I mean, if you want things to work, it should
- * be where the main executable for the game is. Currently
- * it's pointed at the BG:EE one but that can be changed
- * as I've just said although a more ideal method should
- * be put in place instead (consider this more of a TODO
- * than information about this file in which the information
- * outsizes the largely self-explanatory code by a large margin
- * because I felt like writing a lot this morning, but not code).
- *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader_dev/EEex_mac.tph, 2019-07-11 Thursday 16:56:36 nico>
- *
- * Also: could potentially write something to detect what path
- * our data to be installed is in. Shouldn't be too hard.
- *
- * Add:
- *   ini options (for what even?)
- *   custom EEex.sh name support
- *   version checking? yes please? hm?
- *   this thing and the binaries to the main EEex repo
- *   OS checking
- *   check whether EEex is already installed
- *   more bugs!
- *   and jokes
- *   uuuuuuuuuuuuuh
- *   automatically beautify EEex.sh?
- *   document things? nah
+ * Shouldn't be changed without a good reason, since
+ * users won't find their EEex.sh if you change it.
  *
  */
+ 
+/* 
+ * EEex_MacOSX.tph TO DO LIST:
+ *   get this thing and the binaries to the main EEex repo
+ *   check whether EEex is already installed
+ *   automatically beautify EEex.sh
+ */
 
-ACTION_IF !EEexMacLoader_based BEGIN
-  OUTER_SET EEexMacLoader_based "EEex/mac"
+//AT_NOW ~pwd | sed -e "s/\/Applications\/\(.*\)\/Game.*/\1/" >.c7_game_name~
+
+AT_NOW ~pwd >.c7_cwd~ /* this is dumb but I don't know better */
+
+COPY ".c7_cwd" "."
+  READ_ASCII 0x0 c7_game_wd (%SOURCE_SIZE% - 1)
+BUT_ONLY
+
+OUTER_INNER_PATCH_SAVE c7_game_executable "%USER_DIRECTORY%" BEGIN
+  REPLACE_TEXTUALLY EVALUATE_REGEXP ~^/Users/.*/Documents/\(.*\)$~ ~\1~
 END
 
-ACTION_IF !c7_game_exe_path BEGIN
-  OUTER_SET c7_game_exe_path "Baldur's Gate - Enhanced Edition.app/Contents/MacOS"
+PRINT ~%c7_game_executable%~
+
+<<<<<<<< __inlined__c7__EEex.sh
+#!/bin/sh
+
+DYLD_INSERT_LIBRARIES=EEexLoader.dylib GAME_EXEC; exit;
+>>>>>>>>
+
+OUTER_SPRINT c7_game_exe_path EVAL "%c7_game_executable%.app/Contents/MacOS"
+
+ACTION_IF !VARIABLE_IS_SET EEex_launch_path BEGIN
+  OUTER_SPRINT EEex_launch_path "."
 END
-  
-COPY "%EEexMacLoader_based%/copy" "%c7_game_exe_path%/"
 
-/* assume our file's name remains the same */
-AT_NOW ~chmod +x %c7_game_exe_path%/EEex.sh~
+COPY __inlined__c7__EEex.sh "%EEex_launch_path%/EEex.sh"
+  REPLACE_TEXTUALLY "GAME_EXEC" ~"%c7_game_wd%/%c7_game_exe_path%/%c7_game_executable%"~
 
-PRINT ~EEex installed. Please launch the game via EEex.sh if you wish to make use of EEex. Otherwise, you can continue playing the game as usual by launching it however you used to.~
+AT_NOW ~chmod +x "%c7_game_exe_path%/EEex.sh"~
+
+ACTION_IF !VARIABLE_IS_SET EEex_osx_loader_based BEGIN
+  OUTER_SPRINT EEex_osx_loader_based "EEex/mac"
+END
+
+//COPY "%EEexMacLoader_based%/copy" "%c7_game_exe_path%/"
+
+AT_NOW ~rm -f .c7_cwd~ /* .c7_game_name */
+
+PRINT ~EEex has been installed. Please launch the game via EEex.sh if you wish to make use of it.~
