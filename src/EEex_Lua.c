@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-07-18 Thursday 01:44:04 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-08-02 Friday 17:11:59 nico>
  *
  */
 
@@ -112,16 +112,10 @@ int EEex_lua_write_byte(void* L)
 
 int EEex_lua_dlsym(void* L)
 {
-    const char* sym = EEex_lua.tostring(L, -1, NULL); /* hackjob, probably too slow, so fix and add error checking */
-    uint64_t temp = (uint64_t)dlsym(dlopen(NULL, RTLD_NOW), sym);
+    const char* sym = EEex_lua.tostring(L, -1, NULL);
+    uint64_t temp = (uint64_t)dlsym(RTLD_MAIN_ONLY, sym);
     EEex_lua.pushnumber(L, (double)temp);
     return 1;
-}
-
-int EEex_lua_make_call(void* L)
-{
-    (void)L;
-    return 0;
 }
 
 int EEex_lua_expose_cfunc(void* L)
@@ -130,5 +124,15 @@ int EEex_lua_expose_cfunc(void* L)
     const char* name = EEex_lua.tostring(L, -1, NULL);
     EEex_lua.pushcclosure(L, (lua_CFunction)faddr, 0);
     EEex_lua.setglobal(L, name);
+    return 0;
+}
+
+int EEex_lua_write_string(void* L)
+{
+    ptrdiff_t wraddr = EEex_lua.tointegerx(L, -2, NULL);
+    const char* wrs = EEex_lua.tostring(L, -1, NULL);
+    if (EEex_write((void*)wraddr, (void*)wrs, strlen(wrs) + 1))
+	EEex_Log(0, "error: failed to write %u bytes at %p\n", strlen(wrs) + 1, wraddr);
+
     return 0;
 }
