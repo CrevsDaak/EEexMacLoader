@@ -24,8 +24,4 @@ struct __eeex_lua_f_list
 
 struct __eeex_lua_f_list EEex_lua;
 
-void EEex_patch_lua_init(void);
-
-bool EEex_initialised;
-
 #endif /* !__EEEX_INIT_H_ */

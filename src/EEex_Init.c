@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-08-02 Friday 01:12:08 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-08-02 Friday 12:48:14 nico>
  *
  */
 
@@ -33,7 +33,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <signal.h>
 #include <unistd.h>
 #include <dlfcn.h>
 #include <sysexits.h>
@@ -49,6 +48,7 @@
 
 int EEex_init(void* L, const char* s)
 {
+    /* might be worth moving all these to EEex_ctor */
     EEex_lua.pushcclosure = dlsym(RTLD_MAIN_ONLY, "lua_pushcclosure");
     EEex_lua.loadstring = dlsym(RTLD_MAIN_ONLY, "luaL_loadstring");
     EEex_lua.tointegerx = dlsym(RTLD_MAIN_ONLY, "lua_tointegerx");
@@ -99,10 +99,10 @@ __attribute__((constructor)) static void EEex_ctor(void)
 	exit(EX_OSERR);
     }
 
-    void* btLua = dlsym(dlopen(NULL, RTLD_NOW), "_Z12bootstrapLuav");
-    if (btLua) /* this check is so that I test this on lldb */
+    void* btLua = dlsym(RTLD_MAIN_ONLY, "_Z12bootstrapLuav");
+    if (btLua) /* this check is so that I can test this on lldb, not needed if not debugging */
     {
-	int32_t off_bt = (int32_t)&EEex_init - ((int32_t)btLua + 323);
+	int32_t off_bt = (int32_t)&EEex_init - ((int32_t)btLua + 323); /* 323, 319 are hardcoded offsets: don't do this!! */
 	if (EEex_write((void*)(btLua + 319), &off_bt, 4))
 	{
 	    EEex_Log(0, "error: EEex_write failed to patch into bootstrapLua: exiting!\n");
