@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-07-18 Thursday 01:44:34 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-08-02 Friday 01:12:08 nico>
  *
  */
 
@@ -49,22 +49,20 @@
 
 int EEex_init(void* L, const char* s)
 {
-    void* h = dlopen(NULL, RTLD_NOW);
-
-    EEex_lua.pushcclosure = dlsym(h, "lua_pushcclosure");
-    EEex_lua.getint = dlsym(h, "luaH_getint");
-    EEex_lua.gettop = dlsym(h, "lua_gettop");
-    EEex_lua.type = dlsym(h, "lua_type");
-    EEex_lua.toboolean = dlsym(h, "lua_toboolean");
-    EEex_lua.tonumber = dlsym(h, "lua_tonumberx");
-    EEex_lua.newlstr = dlsym(h, "luaS_newlstr");
-    EEex_lua.typename = dlsym(h, "lua_typename");
-    EEex_lua.setglobal = dlsym(h, "lua_setglobal");
-    EEex_lua.tointegerx = dlsym(h, "lua_tointegerx");
-    EEex_lua.pushnumber = dlsym(h, "lua_pushnumber");
-    EEex_lua.loadstring = dlsym(h, "luaL_loadstring");
-    EEex_lua.tostring = dlsym(h, "lua_tolstring");
-    EEex_lua.pushnil = dlsym(h, "lua_pushnil");
+    EEex_lua.pushcclosure = dlsym(RTLD_MAIN_ONLY, "lua_pushcclosure");
+    EEex_lua.loadstring = dlsym(RTLD_MAIN_ONLY, "luaL_loadstring");
+    EEex_lua.tointegerx = dlsym(RTLD_MAIN_ONLY, "lua_tointegerx");
+    EEex_lua.pushnumber = dlsym(RTLD_MAIN_ONLY, "lua_pushnumber");
+    EEex_lua.toboolean = dlsym(RTLD_MAIN_ONLY, "lua_toboolean");
+    EEex_lua.setglobal = dlsym(RTLD_MAIN_ONLY, "lua_setglobal");
+    EEex_lua.tostring = dlsym(RTLD_MAIN_ONLY, "lua_tolstring");
+    EEex_lua.tonumber = dlsym(RTLD_MAIN_ONLY, "lua_tonumberx");
+    EEex_lua.typename = dlsym(RTLD_MAIN_ONLY, "lua_typename");
+    EEex_lua.newlstr = dlsym(RTLD_MAIN_ONLY, "luaS_newlstr");
+    EEex_lua.pushnil = dlsym(RTLD_MAIN_ONLY, "lua_pushnil");
+    EEex_lua.getint = dlsym(RTLD_MAIN_ONLY, "luaH_getint");
+    EEex_lua.gettop = dlsym(RTLD_MAIN_ONLY, "lua_gettop");
+    EEex_lua.type = dlsym(RTLD_MAIN_ONLY, "lua_type");
 
     EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_init, 0);
     EEex_lua.setglobal(L, "EEex_Init");
