@@ -1,6 +1,6 @@
 // installer lib for the Mac version of the EEex loader
 // author: CrevsDaak
-// Time-stamp: </Users/nico/BG_modding/EEexMacLoader/EEex_MacOSX.tph, 2019-07-27 Saturday 00:37:46 nico>
+// Time-stamp: </Users/nico/BG_modding/EEexMacLoader/EEex_MacOSX.tph, 2019-08-02 Friday 12:47:19 nico>
 // v1.0
 
 /*
@@ -63,7 +63,7 @@ ACTION_IF !VARIABLE_IS_SET EEex_osx_loader_based BEGIN
   OUTER_SPRINT EEex_osx_loader_based "EEex/mac"
 END
 
-//COPY "%EEexMacLoader_based%/copy" "%c7_game_exe_path%/"
+COPY "%EEexMacLoader_based%/copy" "%c7_game_exe_path%/"
 
 AT_NOW ~rm -f .c7_cwd~ /* .c7_game_name */
 
