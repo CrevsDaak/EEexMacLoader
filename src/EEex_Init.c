@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-08-02 Friday 12:48:14 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Init.c, 2019-08-02 Friday 17:11:17 nico>
  *
  */
 
@@ -82,6 +82,9 @@ int EEex_init(void* L, const char* s)
     EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_expose_cfunc, 0);
     EEex_lua.setglobal(L, "EEex_ExposeToLua");
 
+    EEex_lua.pushcclosure(L, (lua_CFunction)&EEex_lua_write_string, 0);
+    EEex_lua.setglobal(L, "EEex_WriteString");
+
     return EEex_lua.loadstring(L, s);
 }
 
@@ -105,7 +108,7 @@ __attribute__((constructor)) static void EEex_ctor(void)
 	int32_t off_bt = (int32_t)&EEex_init - ((int32_t)btLua + 323); /* 323, 319 are hardcoded offsets: don't do this!! */
 	if (EEex_write((void*)(btLua + 319), &off_bt, 4))
 	{
-	    EEex_Log(0, "error: EEex_write failed to patch into bootstrapLua: exiting!\n");
+	    EEex_Log(0, "error: EEex_write failed to patch EEex_init call into bootstrapLua: exiting!\n");
 	    exit(EX_OSERR); /* maybe use EX_NOPERM instead?? */
 	}
     }
