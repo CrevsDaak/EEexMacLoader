@@ -1,6 +1,6 @@
 // installer lib for the Mac version of the EEex loader
 // author: CrevsDaak
-// Time-stamp: </Users/nico/BG_modding/EEexMacLoader/EEex_MacOSX.tph, 2019-08-08 Thursday 20:27:57 nico>
+// Time-stamp: </Users/nico/BG_modding/EEexMacLoader/EEex_MacOSX.tph, 2019-08-08 Thursday 20:52:07 nico>
 // v1.0
 
 /*
@@ -40,11 +40,9 @@ OUTER_INNER_PATCH_SAVE c7_game_executable "%USER_DIRECTORY%" BEGIN
   REPLACE_TEXTUALLY EVALUATE_REGEXP ~^/Users/.*/Documents/\(.*\)$~ ~\1~
 END
 
-PRINT ~%c7_game_executable%~
-
 <<<<<<<< __inlined__c7__EEex.sh
 #!/bin/sh
-
+cd GAME_PATH;
 DYLD_INSERT_LIBRARIES=EEexLoader.dylib GAME_EXEC; exit;
 >>>>>>>>
 
@@ -55,7 +53,8 @@ ACTION_IF !VARIABLE_IS_SET EEex_launch_path BEGIN
 END
 
 COPY __inlined__c7__EEex.sh "%EEex_launch_path%/EEex.sh"
-  REPLACE_TEXTUALLY "GAME_EXEC" ~"%c7_game_wd%/%c7_game_exe_path%/%c7_game_executable%"~
+  REPLACE_TEXTUALLY "GAME_EXEC" ~"./%c7_game_executable%"~
+  REPLACE_TEXTUALLY "GAME_PATH" ~"%c7_game_wd%/%c7_game_exe_path%/"~
 
 AT_NOW ret ~chmod +x "%c7_game_exe_path%/EEex.sh"~
 
@@ -67,6 +66,6 @@ ACTION_IF !VARIABLE_IS_SET EEex_osx_loader_based BEGIN
   OUTER_SPRINT EEex_osx_loader_based "EEex/osx"
 END
 
-COPY "%EEexMacLoader_based%/copy" "%c7_game_exe_path%/"
+COPY "%EEex_osx_loader_based%/EEexLoader.dylib" "%c7_game_exe_path%/"
 
 PRINT ~EEex has been installed. Please launch the game via EEex.sh if you wish to make use of it.~
