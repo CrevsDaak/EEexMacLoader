@@ -25,67 +25,76 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Mach.c, 2019-07-17 Wednesday 12:28:18 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Mach.c, 2019-09-19 Thursday 16:46:51 nico>
  *
  */
+
+#include "EEex_Mach.h"
+
+#include <mach/mach_error.h>
+#include <mach/mach_init.h>
+#include <mach/mach_vm.h>
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <mach/mach_vm.h>
-#include <mach/mach_init.h>
-#include <mach/mach_error.h>
 
-#include "EEex_Mach.h"
 #include "EEex_Logger.h"
 
-int EEex_protect(void* addr, vm_prot_t prot, bool max)
+int
+EEex_protect(void* addr, vm_prot_t prot, bool max)
 {
     mach_vm_size_t vmsize;
     vm_region_basic_info_data_64_t info;
     mach_msg_type_number_t info_count = VM_REGION_BASIC_INFO_COUNT_64;
     memory_object_name_t object;
 
-    mach_error_t e = mach_vm_region(mach_task_self(), (mach_vm_address_t*)&addr, &vmsize, VM_REGION_BASIC_INFO_64, (vm_region_info_64_t)&info, &info_count, &object);
+    mach_error_t e =
+        mach_vm_region(mach_task_self(), (mach_vm_address_t*)&addr, &vmsize, VM_REGION_BASIC_INFO_64,
+                       (vm_region_info_64_t)&info, &info_count, &object);
     if (e != KERN_SUCCESS)
     {
-	EEex_Log(0, "error: vm_region failed: %s\n", mach_error_string(e));
-	return 1;
+        EEex_Log(0, "error: vm_region failed: %s\n", mach_error_string(e));
+        return 1;
     }
     if ((info.protection == prot && !max) || (info.max_protection == prot && max))
-	return 0; /* nothing to do (right?) */
+        return 0; /* nothing to do (right?) */
     else
-	e = mach_vm_protect(mach_task_self(), (mach_vm_address_t)addr, vmsize, max, prot);
+        e = mach_vm_protect(mach_task_self(), (mach_vm_address_t)addr, vmsize, max, prot);
     /* should try raising max prot if real prot fails to get settled */
     if (e != KERN_SUCCESS)
     {
-	EEex_Log(0, "error: vm_protect failed: %s\n", mach_error_string(e));
-	return 1;
+        EEex_Log(0, "error: vm_protect failed: %s\n", mach_error_string(e));
+        return 1;
     }
     else
-	return 0;
+        return 0;
 }
 /* maybe add a soft failure system and call vm_protect if necessary? */
-int EEex_write(void* wraddr, void* data, uint32_t dsz)
+int
+EEex_write(void* wraddr, void* data, uint32_t dsz)
 {
-    kern_return_t e = mach_vm_write(mach_task_self(), (mach_vm_address_t)wraddr, (pointer_t)data, (mach_msg_type_number_t)dsz);
+    kern_return_t e = mach_vm_write(mach_task_self(), (mach_vm_address_t)wraddr, (pointer_t)data,
+                                    (mach_msg_type_number_t)dsz);
     if (e != KERN_SUCCESS)
     {
-	EEex_Log(0, "error: vm_write(%u) failed: %s\n", dsz, mach_error_string(e));
-	return 1;
+        EEex_Log(0, "error: vm_write(%u) failed: %s\n", dsz, mach_error_string(e));
+        return 1;
     }
     else
-	return 0;
+        return 0;
 }
 
-int EEex_read(void* raddr, void* dst, uint32_t rsz)
+int
+EEex_read(void* raddr, void* dst, uint32_t rsz)
 {
-    kern_return_t e = mach_vm_read(mach_task_self(), (mach_vm_address_t)raddr, (mach_vm_size_t)rsz, (vm_offset_t*)dst, &rsz);
+    kern_return_t e = mach_vm_read(mach_task_self(), (mach_vm_address_t)raddr, (mach_vm_size_t)rsz,
+                                   (vm_offset_t*)dst, &rsz);
     if (e != KERN_SUCCESS)
     {
-	EEex_Log(0, "error: vm_read(%u) failed: %s\n", rsz, mach_error_string(e));
-	return 1;
+        EEex_Log(0, "error: vm_read(%u) failed: %s\n", rsz, mach_error_string(e));
+        return 1;
     }
     else
-	return 0;
+        return 0;
 }

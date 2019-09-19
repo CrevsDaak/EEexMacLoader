@@ -25,59 +25,64 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-08-02 Friday 17:11:59 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-09-19 Thursday 16:46:46 nico>
  *
  */
 
+#include "EEex_Lua.h"
+
+#include <mach/mach_vm.h>
+#include <sys/_types/_ptrdiff_t.h>
+
+#include <dlfcn.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
-#include <dlfcn.h>
-#include <sys/_types/_ptrdiff_t.h>
-#include <mach/mach_vm.h>
 
-#include "EEex_Mach.h"
-#include "EEex_Logger.h"
 #include "EEex_Init.h"
+#include "EEex_Logger.h"
+#include "EEex_Mach.h"
 
-int EEex_lua_init(void* L)
+int
+EEex_lua_init(void* L)
 {
     EEex_Log(3, "EEex_Init called! (from Lua)\n");
     uint64_t r = (uint64_t)malloc(4096);
     if (!r)
     {
-	EEex_Log(0, "error: malloc failed: %s\n", strerror(errno));
-	EEex_lua.pushnil(L);
+        EEex_Log(0, "error: malloc failed: %s\n", strerror(errno));
+        EEex_lua.pushnil(L);
     }
     else
-	EEex_lua.pushnumber(L, (double)r);
+        EEex_lua.pushnumber(L, (double)r);
 
     return 1;
 }
 
-int EEex_lua_dump_stack(void *L)
+int
+EEex_lua_dump_stack(void* L)
 {
     int top = EEex_lua.gettop(L);
     for (int i = 1; i <= top; i++)
     {
         int t = EEex_lua.type(L, i);
         switch (t)
-	{
-	case 4:
-	    EEex_Log(3, "[%d] `%s'\n", EEex_lua.tostring(L, i, NULL), i);
-	    break;
-	    
-	case 1:
-	    EEex_Log(3, EEex_lua.toboolean(L, i) ? "[%d] true\n" : "[%d] false\n", i);
-	    break;
-	    
-	case 3:
-	    EEex_Log(3, "[%d] %g\n", EEex_lua.tonumber(L, i, NULL), i);
-	    break;
-	    
-	default:  /* other values */
+        {
+        case 4:
+            EEex_Log(3, "[%d] `%s'\n", EEex_lua.tostring(L, i, NULL), i);
+            break;
+
+        case 1:
+            EEex_Log(3, EEex_lua.toboolean(L, i) ? "[%d] true\n" : "[%d] false\n", i);
+            break;
+
+        case 3:
+            EEex_Log(3, "[%d] %g\n", EEex_lua.tonumber(L, i, NULL), i);
+            break;
+
+        default: /* other values */
             EEex_Log(3, "[%d] %s\n", EEex_lua.typename(L, t), i);
             break;
         }
@@ -85,32 +90,35 @@ int EEex_lua_dump_stack(void *L)
     return 0;
 }
 
-int EEex_lua_read_dword(void* L)
+int
+EEex_lua_read_dword(void* L)
 {
     ptrdiff_t raddr = EEex_lua.tointegerx(L, -1, NULL);
     int32_t dword;
     if (EEex_read((void*)raddr, &dword, 4))
     {
-	EEex_Log(0, "error: failed to read dword at %p\n", raddr);
-	EEex_lua.pushnil(L);
+        EEex_Log(0, "error: failed to read dword at %p\n", raddr);
+        EEex_lua.pushnil(L);
     }
     else
-	EEex_lua.pushnumber(L, (double)dword);
+        EEex_lua.pushnumber(L, (double)dword);
 
     return 1;
 }
 
-int EEex_lua_write_byte(void* L)
+int
+EEex_lua_write_byte(void* L)
 {
     ptrdiff_t wraddr = EEex_lua.tointegerx(L, -2, NULL);
     int8_t byte = EEex_lua.tointegerx(L, -1, NULL);
     if (EEex_write((void*)wraddr, &byte, 1))
-	EEex_Log(0, "error: failed to write %d on byte at %p\n", byte, wraddr);
+        EEex_Log(0, "error: failed to write %d on byte at %p\n", byte, wraddr);
 
     return 0;
 }
 
-int EEex_lua_dlsym(void* L)
+int
+EEex_lua_dlsym(void* L)
 {
     const char* sym = EEex_lua.tostring(L, -1, NULL);
     uint64_t temp = (uint64_t)dlsym(RTLD_MAIN_ONLY, sym);
@@ -118,7 +126,8 @@ int EEex_lua_dlsym(void* L)
     return 1;
 }
 
-int EEex_lua_expose_cfunc(void* L)
+int
+EEex_lua_expose_cfunc(void* L)
 {
     ptrdiff_t faddr = EEex_lua.tointegerx(L, -2, NULL);
     const char* name = EEex_lua.tostring(L, -1, NULL);
@@ -127,12 +136,13 @@ int EEex_lua_expose_cfunc(void* L)
     return 0;
 }
 
-int EEex_lua_write_string(void* L)
+int
+EEex_lua_write_string(void* L)
 {
     ptrdiff_t wraddr = EEex_lua.tointegerx(L, -2, NULL);
     const char* wrs = EEex_lua.tostring(L, -1, NULL);
     if (EEex_write((void*)wraddr, (void*)wrs, strlen(wrs) + 1))
-	EEex_Log(0, "error: failed to write %u bytes at %p\n", strlen(wrs) + 1, wraddr);
+        EEex_Log(0, "error: failed to write %u bytes at %p\n", strlen(wrs) + 1, wraddr);
 
     return 0;
 }
