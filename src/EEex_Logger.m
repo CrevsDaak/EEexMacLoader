@@ -25,51 +25,54 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Logger.m, 2019-07-16 Tuesday 22:43:38 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Logger.m, 2019-11-15 Friday 20:45:04 nico>
  *
  */
 
-#include <stdio.h> /* no need for stdio.h after using asl.h is implemented */
-#include <Foundation/NSObjCRuntime.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include <unistd.h>
+
+#include <Foundation/Foundation.h>
+
+#include "EEex_Init.h"
 #include "EEex_Logger.h"
-/* hopefully not too far in the future, this file will get a complete rework,
- * mainly to make use of the Apple System Log and not be as messy
-*/
 
-static int loglevel = 5; /* make this configurable */
-
-/* values for p:
- 0 is for ''critical failures'' and friends
- 1 is for user messages
- 2 is for game messages (everything re-routed from NSLog)
- 3 is EEex dev debugging
- 4 is for in-game EEex functions debugging
- 5 is always saved to the log but never printed unless loglevel=6
-*/
-/* currently, logging to a file is not implemented */
-/* the way loglevel is being checked wastes about 3 instructions, improve it. */
-int EEex_Logv(int p, const char* restrict a, va_list ap)
+static int
+EEex_Logv(int lvl, const char* restrict a, va_list ap)
 {
-    if ((loglevel - p) > 0)
-	return vprintf(a, ap); /* okay... */
-    return 0;
+    switch (lvl)
+    {
+    case -1:
+	return vfprintf(logfile, a, ap);
+    case 0:
+	vfprintf(logfile, a, ap);
+	/* fallthrough */
+    case 1:
+	return vprintf(a, ap);
+    default:
+	return 0;
+    }
 }
 
-int EEex_Log(int s, const char* fmt, ...)
+int
+EEex_Log(int s, const char* fmt, ...)
 {
     va_list w;
     va_start(w, fmt);
-    return EEex_Logv(s, fmt, w);
+    int r = EEex_Logv(s, fmt, w);
     va_end(w);
+    return r;
 }
 
-void EEex_interpose_Log(NSString* restrict a, ...)
+static void
+EEex_interpose_Log(NSString* restrict a, ...)
 {
     va_list w;
-    va_start(w, [a UTF8String]);
-    /* this gives out a LOT of warnings, but I don't really know ObjC so not fixing */
-    NSString *b = [[NSString alloc] initWithFormat:a arguments:w];
-    EEex_Logv(6, [[NSString stringWithFormat: @"%@\n", b] UTF8String], w);
+    va_start(w, a);
+    NSString* b = [[NSString alloc] initWithFormat:a arguments:w];
+    EEex_Logv(6, [[NSString stringWithFormat:@"%@\n", b] UTF8String], w);
     va_end(w);
 }
 

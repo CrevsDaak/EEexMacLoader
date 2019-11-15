@@ -1,7 +1,6 @@
-# Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/Makefile, 2019-07-26 Friday 16:50:46 nico>
+# Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/Makefile, 2019-09-20 Friday 00:58:26 nico>
 
-CFLAGS += -O3 -std=c99 -Wall -Wextra
-#probably should use something else to set these
+CFLAGS += -O3 -flto -std=c99 -Wall -Wextra
 LDFLAGS += -dynamiclib -framework Foundation
 
 src := $(shell find . -name \*.[cm])
@@ -11,9 +10,8 @@ EEexLoader.dylib: $(addsuffix .o, $(basename $(src)))
 
 %.o: %.c
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
-#already know what the compiler will say so silence objc warnings
 %.o: %.m 
-	$(COMPILE.m) -w $(OUTPUT_OPTION) $<
+	$(COMPILE.m) $(OUTPUT_OPTION) $<
 
 .PHONY: clean
 clean:

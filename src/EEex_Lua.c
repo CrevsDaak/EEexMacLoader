@@ -25,11 +25,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-09-19 Thursday 16:46:46 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Lua.c, 2019-09-19 Thursday 17:42:42 nico>
  *
  */
-
-#include "EEex_Lua.h"
 
 #include <mach/mach_vm.h>
 #include <sys/_types/_ptrdiff_t.h>
@@ -42,6 +40,7 @@
 #include <string.h>
 
 #include "EEex_Init.h"
+#include "EEex_Lua.h"
 #include "EEex_Logger.h"
 #include "EEex_Mach.h"
 

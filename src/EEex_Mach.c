@@ -25,11 +25,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Mach.c, 2019-09-19 Thursday 16:46:51 nico>
+ * Time-stamp: </Users/nico/BG_modding/EEexMacLoader/src/EEex_Mach.c, 2019-09-19 Thursday 17:42:53 nico>
  *
  */
-
-#include "EEex_Mach.h"
 
 #include <mach/mach_error.h>
 #include <mach/mach_init.h>
@@ -39,6 +37,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "EEex_Mach.h"
 #include "EEex_Logger.h"
 
 int
